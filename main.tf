@@ -11,12 +11,28 @@ variable "my_ip" {
   description = "Your ip address"
 }
 
+variable "db_name" {
+  description = "RDS database name"
+}
+
+variable "rds_user" {
+  description = "Username for your RDS user"
+}
+
+variable "rds_password" {
+  description = "Password for your RDS user"
+}
+
 output "bastion_host_public_ip" {
   value = aws_instance.bastion.public_ip
 }
 
 output "app_host_private_ip" {
   value = aws_instance.app.private_ip
+}
+
+output "rds_endpoint" {
+  value = aws_db_instance.this.endpoint
 }
 
 ### NETWORKING ###
@@ -108,7 +124,7 @@ resource "aws_route_table" "compute" {
   vpc_id = aws_vpc.this.id
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.this.id
   }
 }
@@ -180,5 +196,40 @@ resource "aws_security_group" "app" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+### DATA ###
+resource "aws_db_instance" "this" {
+  allocated_storage      = 20
+  db_name                = var.db_name
+  engine                 = "postgres"
+  instance_class         = "db.t3.micro"
+  username               = var.rds_user
+  password               = var.rds_password
+  skip_final_snapshot    = true
+  db_subnet_group_name   = aws_db_subnet_group.this.name
+  vpc_security_group_ids = [aws_security_group.db.id]
+
+}
+
+resource "aws_db_subnet_group" "this" {
+  subnet_ids = [aws_subnet.db.id, aws_subnet.db_2.id]
+
+  tags = {
+    Name = "Expense Tracker RDS Subnet Group"
+  }
+}
+
+resource "aws_security_group" "db" {
+  name        = "rds_sg"
+  description = "SG rules for the Expense Tracker RDS Database"
+  vpc_id      = aws_vpc.this.id
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.compute.cidr_block]
   }
 }
