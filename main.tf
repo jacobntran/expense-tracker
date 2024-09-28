@@ -39,10 +39,6 @@ output "bastion_host_public_ip" {
   value = aws_instance.bastion.public_ip
 }
 
-output "app_host_private_ip" {
-  value = aws_instance.app.private_ip
-}
-
 output "alb_dns_name" {
   value = aws_lb.this.dns_name
 }
@@ -190,25 +186,6 @@ resource "aws_instance" "bastion" {
   }
 }
 
-resource "aws_instance" "app" {
-  ami                    = "ami-0d53d72369335a9d6"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.compute_1.id
-  key_name               = var.key_name
-  vpc_security_group_ids = [aws_security_group.app.id]
-  depends_on             = [aws_db_instance.this]
-  user_data              = file("./scripts/setup.sh")
-  iam_instance_profile   = aws_iam_instance_profile.ec2_ssm_instance_profile.name
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = {
-    Name = "Expense Tracker Application Host"
-  }
-}
-
 resource "aws_security_group" "bastion" {
   name        = "expense_tracker_bastion_host_sg"
   description = "SG rules for the Expense Tracker Bastion Host"
@@ -352,17 +329,44 @@ resource "aws_lb_target_group" "back_end" {
   }
 }
 
-## TG ATTACHMENT
-resource "aws_lb_target_group_attachment" "front_end" {
-  target_group_arn = aws_lb_target_group.front_end.arn
-  target_id        = aws_instance.app.id
-  port             = 80
+## ASG
+resource "aws_launch_template" "expense_tracker" {
+  name = "expense-tracker-lt"
+  image_id = "ami-0d53d72369335a9d6"
+  instance_type = "t2.micro"
+  key_name = "m3-mb-pro"
+  vpc_security_group_ids = [aws_security_group.app.id]
+  user_data = base64encode(file("./scripts/setup.sh"))
+  
+  iam_instance_profile {
+    arn = aws_iam_instance_profile.ec2_ssm_instance_profile.arn
+  }
+
+  tags = {
+    Name = "Expense Tracker Launch Template"
+  }
 }
 
-resource "aws_lb_target_group_attachment" "back_end" {
-  target_group_arn = aws_lb_target_group.back_end.arn
-  target_id        = aws_instance.app.id
-  port             = 3000
+resource "aws_autoscaling_group" "this" {
+  name = "expense-tracker-asg"
+  min_size = 1
+  max_size = 1
+  desired_capacity = 1
+  health_check_grace_period = 900
+  health_check_type = "ELB"
+  vpc_zone_identifier = [ aws_subnet.compute_1.id, aws_subnet.compute_2.id ]
+  target_group_arns = [aws_lb_target_group.front_end.arn, aws_lb_target_group.back_end.arn]
+  depends_on = [ aws_db_instance.this ]
+  launch_template {
+    id = aws_launch_template.expense_tracker.id
+    version = "$Latest"
+  }
+
+  tag {
+    key = "Name"
+    value = "Expense Tracker App Host"
+    propagate_at_launch = true
+  }
 }
 
 ### DATA ###
