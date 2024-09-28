@@ -16,6 +16,9 @@ const pool = new Pool({
     database: 'yourDatabaseName', // your database name
     password: 'yourPassword',     // your database password
     port: 5432,                   // default PostgreSQL port
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Create a table for expenses if it doesn't exist (run once)
@@ -32,6 +35,11 @@ pool.query(`
     } else {
         console.log('Expense table ready.');
     }
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', message: 'Service is healthy' });
 });
 
 // Get all expenses
