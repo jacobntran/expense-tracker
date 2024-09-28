@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost:3000/api/expenses'; // Pointing to your Node.js backend
+const apiUrl = 'http://<INSERT_LB_DNS_NAME}>:3000/api/expenses'; // Pointing to your Node.js backend
 let expenses = [];
 let currentEditingId = null;
 
