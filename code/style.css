@@ -1,57 +1,98 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f2f5;
     padding: 20px;
+    color: #333;
 }
 
 .container {
     max-width: 600px;
     margin: 0 auto;
     background: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 h1, h2 {
     text-align: center;
+    color: #4a90e2;
+    font-weight: 600;
 }
 
 .expense-form {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 20px;
+    align-items: center;
+    margin-bottom: 25px;
 }
 
-.expense-form input, .expense-form select, .expense-form button {
-    padding: 10px;
+.expense-form input, .expense-form select {
+    padding: 12px;
     font-size: 16px;
-    margin-right: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: calc(100% / 3 - 10px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.expense-form button {
+    padding: 12px;
+    font-size: 16px;
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: calc(100% / 3 - 10px);
+}
+
+.expense-form button:hover {
+    background-color: #357ABD;
 }
 
 #expense-table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 #expense-table th, #expense-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
+    border: none;
+    padding: 12px;
     text-align: center;
+    background-color: #fafafa;
 }
 
 #expense-table th {
-    background-color: #4CAF50;
+    background-color: #4a90e2;
     color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#expense-table td {
+    background-color: #f9f9f9;
+}
+
+#expense-table tr:nth-child(even) td {
+    background-color: #eef2f5;
 }
 
 button {
-    background-color: #4CAF50;
+    background-color: #4a90e2;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #357ABD;
 }
